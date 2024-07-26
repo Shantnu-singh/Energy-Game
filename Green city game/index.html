@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green City Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e0f7fa;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        #greenCity {
+            margin: 20px;
+            width: fit-content;
+            max-width: 700px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #greenBox {
+            margin: 20px;
+            width: fit-content;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(5, 50px);
+            gap: 4px;
+            width: 540px;
+            border: 3px solid #4CAF50;
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            background-color: #ffffff;
+            border: 2px solid #c8e6c9;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button.feature {
+            font-size: 28px;
+            width: fit-content;
+            height: fit-content;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button.feature:hover {
+            background-color: #45a049;
+        }
+
+        #score, #score-value {
+            color: #45a049;
+            font-size: 24px;
+            margin: 20px auto;
+        }
+
+        button#continue-button {
+            height: fit-content;
+            width: fit-content;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button#continue-button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        button#continue-button:hover:enabled {
+            background-color: #45a049;
+        }
+
+        #game-description {
+            width: fit-content;
+            max-width: 700px;
+            text-align: justify;
+        }
+    </style>
+</head>
+<body>
+    <div id="greenCity">
+        <h3>Green City Builder</h3>
+        <p id="game-description">
+            Welcome to the Green City Builder! In this game, you will be tasked with designing a city that incorporates various sustainable features. Your goal is to strategically place different types of buildings and infrastructure to create a green and eco-friendly city. Some of the options include parks, solar panels, recycling centers, bike lanes, and more. However, be cautious as there are also non-sustainable options like factories and landfills that could negatively impact your score. Place your elements wisely to maximize your score and create the most sustainable city possible!
+        </p>
+        <div id="greenBox">
+            <div id="controls">
+                <h4>Select a Feature:</h4>
+                <button class="feature" data-emoji="🌳">🌳</button>
+                <button class="feature" data-emoji="☀️">☀️</button>
+                <button class="feature" data-emoji="♻️">♻️</button>
+                <button class="feature" data-emoji="🚲">🚲</button>
+                <button class="feature" data-emoji="🌲">🌲</button>
+                <button class="feature" data-emoji="🏭">🏭</button>
+                <button class="feature" data-emoji="🗑️">🗑️</button>
+                <button class="feature" data-emoji="🌫️">🌫️</button>
+                <button class="feature" data-emoji="🛢️">🛢️</button>
+            </div>
+            <div id="grid-container"></div>
+        </div>
+        <div id="score">
+            <span><p id="score-value">Score: 0</p></span>
+        </div>
+        <button id="continue-button" onclick="restartGame()" disabled>Continue</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gridContainer = document.getElementById('grid-container');
+            const scoreValue = document.getElementById('score-value');
+            const continueButton = document.getElementById('continue-button');
+            const features = document.querySelectorAll('.feature');
+            let selectedFeature = null;
+            let selectedEmoji = null;
+            let score = 0;
+
+            // Create grid cells
+            for (let i = 0; i < 120; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.addEventListener('click', () => {
+                    if (selectedEmoji) {
+                        cell.textContent = selectedEmoji;
+                        updateScore(selectedEmoji);
+                    }
+                });
+                gridContainer.appendChild(cell);
+            }
+
+            // Feature selection
+            features.forEach(button => {
+                button.addEventListener('click', () => {
+                    features.forEach(btn => btn.classList.remove('selected')); // Deselect all buttons
+                    button.classList.add('selected'); // Select the clicked button
+                    selectedEmoji = button.dataset.emoji;
+                });
+            });
+
+            // Update score based on features placed
+            function updateScore(emoji) {
+                const negativeFeatures = ['🏭', '🗑️', '🌫️', '🛢️'];
+                if (negativeFeatures.includes(emoji)) {
+                    score = Math.max(0, score - 2);
+                } else {
+                    score += 5;
+                }
+
+                scoreValue.textContent = `Score: ${score}`;
+                if (score >= 100) {
+                    continueButton.disabled = false;
+                }
+            }
+
+            // Restart game
+            window.restartGame = function() {
+                score = 0;
+                scoreValue.textContent = `Score: ${score}`;
+                gridContainer.innerHTML = '';
+                continueButton.disabled = true;
+                for (let i = 0; i < 120; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.addEventListener('click', () => {
+                        if (selectedEmoji) {
+                            cell.textContent = selectedEmoji;
+                            updateScore(selectedEmoji);
+                        }
+                    });
+                    gridContainer.appendChild(cell);
+                }
+            };
+        });
+    </script>
+</body>
+</html>
